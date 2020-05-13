@@ -27,10 +27,9 @@ if __name__ == '__main__':
     ct = CenterLoss(10, 2)
     y = torch.Tensor([0,0,2,1])
     feat = torch.zeros(4, 2).requires_grad_()
-    # print(list(ct.parameters()))
+    print(list(ct.parameters()))
     out = ct(feat, y)
-    # print(out.item())
-    # out.backward()
-    # 
-    # print(ct.centers.grad)
-    # print(feat.grad)
+    print(out.item())
+    out.backward() # 计算梯度
+    print(ct.centers.grad)
+    print(feat.grad)

@@ -44,9 +44,10 @@ class CenterLossFunc(Function):
         grad_centers = grad_centers / counts.view(-1, 1)
         return - grad_output * diff / batch_size, None, grad_centers / batch_size, None
 
-def main(test_cuda=False):
-    print('-'*80)
-    device = torch.device("cuda" if test_cuda else "cpu")
+
+if __name__ == '__main__':
+    torch.manual_seed(0)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     ct = CenterLoss(10, 2, size_average=True).to(device)
     y = torch.Tensor([0,0,2,1]).to(device)
     feat = torch.zeros(4,2).to(device).requires_grad_()
@@ -54,12 +55,6 @@ def main(test_cuda=False):
     print(ct.centers.grad)
     out = ct(y, feat)
     print(out.item())
-    out.backward()
-    # print(ct.centers.grad)
-    # print(feat.grad)
-
-if __name__ == '__main__':
-    torch.manual_seed(999)
-    main(test_cuda=False)
-    # if torch.cuda.is_available():
-    #     main(test_cuda=True)
+    out.backward() # 计算梯度
+    print(ct.centers.grad)
+    print(feat.grad)
