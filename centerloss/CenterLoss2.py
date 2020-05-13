@@ -1,36 +1,36 @@
 # *_*coding:utf-8 *_*
 import torch
-import torch as t
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 
-# torch.manual_seed(0)
 
 class CenterLoss(nn.Module):
-    def __init__(self, cls_num, featur_num):
-        super().__init__()
+    def __init__(self, num_classes, feature_dim):
+        super(CenterLoss, self).__init__()
+        self.feature_dim = feature_dim
+        self.num_classes = num_classes
+        self.centers = nn.Parameter(torch.randn(self.num_classes, self.feature_dim))
 
-        self.cls_num = cls_num
-        self.featur_num = featur_num
-        self.center = nn.Parameter(t.randn(cls_num, featur_num))
+    def forward(self, feat, labels):
+        """
+        x: [batch_size, feature_len]
+        labels: [bacth_size]
+        """
+        loss = 0.0
+        for i, g in enumerate(labels):
+            loss += torch.norm(feat[i] - self.centers[g.int(),:]) ** 2
+        loss = loss / feat.size(0) / 2
+        return loss.sum()
 
-    def forward(self, xs, ys):  # xs=feature, ys=target
-        # xs = Variable(xs, requires_grad=True)
-        # xs = F.normalize(xs)
-        center_exp = self.center.index_select(dim=0, index=ys.long()) # 拿到类别的中心点
-        counts = self.center.new_ones(self.center.size(0)) # 选择类别数量
-        ones = self.center.new_ones(ys.size(0)) # 拿到标签的数量
-        counts = counts.scatter_add_(0, ys.long(), ones) # 所有类别标签在一个批次的直方图
-        count_dis = counts.index_select(dim=0, index=ys.long())
-        loss = t.sum(t.sum((xs - center_exp).pow(2), dim=1) / 2.0 / count_dis.float())
-        return loss
 
 if __name__ == '__main__':
-    print('-'*80)
+    torch.manual_seed(0)
     ct = CenterLoss(10, 2)
     y = torch.Tensor([0,0,2,1])
-    feat = torch.zeros(4,2)
-    print(list(ct.parameters()))
+    feat = torch.zeros(4, 2).requires_grad_()
+    # print(list(ct.parameters()))
     out = ct(feat, y)
-    print(out.item())
+    # print(out.item())
+    # out.backward()
+    # 
+    # print(ct.centers.grad)
+    # print(feat.grad)
