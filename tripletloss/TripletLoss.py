@@ -25,11 +25,11 @@ class TripletLoss(nn.Module):
         return loss
 
 if __name__ == '__main__':
-
     torch.manual_seed(0)
     embed = 128
     batch = 10
+    feat = torch.randn(batch, embed * 3)
     tripletloss = TripletLoss(embed, margin=0.2)
-    feat = torch.randn(batch,embed*3)
+    print(list(tripletloss.parameters()))
     out = tripletloss(feat)
     print(out.item())
