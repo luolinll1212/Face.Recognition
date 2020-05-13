@@ -12,36 +12,23 @@ import matplotlib.pyplot as plt
 class ArcLoss(nn.Module):
     def __init__(self, feature_dim, cls_dim):
         super(ArcLoss, self).__init__()
-        # 符合正太分为的方式初始化w
         self.weight = nn.Parameter(torch.randn(feature_dim, cls_dim))  # feature*weight -> n*cls_dim
-        self.s = 10
-        # m是加的角度
-        self.m = 0.1
+        self.s = 10 # 防止梯度爆炸
+        self.m = 0.1 # 改变角度
 
     def forward(self, feature):
-        # normalize不改变形状，norm求模改变形状(求模的轴的形状为１，不给轴就是变为了常数)
-        # 求w和x的二范数归一化
-        feature = F.normalize(feature, dim=1)
-        # print("feature.shape: ", feature.shape)
-        w = F.normalize(self.weight, dim=0)
+        feature = F.normalize(feature, dim=1) # 2范数归一化
+        w = F.normalize(self.weight, dim=0) # ２范数归一化
 
-        # 角度，除以１０是为了防止梯度爆炸，公式cos_theat是x*w/(||x||*||w||),而feature和w都是二范数归一化，也就是x/||x||和w//||w||
-        # 所以cos_theat就等于torch.matmul(feature, w)
-        # 如果feature和w前面只是求模，则cos_theat就是torch.matmul(feature, w)/(torch.mm(feature, w))
-        # 注意只求模矩阵相城主要形状(feature是n*embed,w是embed*cls)，讲两个变为Ｎ1和１C才能矩阵相乘
-        cos_theat = torch.matmul(feature, w) / 10
-        # 反三角计算角度
-        a = torch.acos(cos_theat)
+        cos_theat = torch.matmul(feature, w) / 10 # 计算角度
+        a = torch.acos(cos_theat) # 反三角计算角度
 
-        # 改变过角度的值，即分子与分母的第一个式子
-        top = torch.exp((torch.cos(a + self.m)) * self.s)
-        # 原来角度的值，要减去这个
-        _top = torch.exp((torch.cos(a)) * self.s)
-        # 分母的第二部分，要减去_top
-        bottom = torch.sum(torch.exp(cos_theat * self.s), dim=1).view(-1, 1)
+        top = torch.exp((torch.cos(a + self.m)) * self.s) # 计算改变的角度
+        _top = torch.exp((torch.cos(a)) * self.s) # 计算为原的角度
 
-        # 公式中的log后面的计算，只需要求这里就行了
-        divide = (top / (bottom - _top + top)) + 1e-10
+        bottom = torch.sum(torch.exp(cos_theat * self.s), dim=1).view(-1, 1) # 计算分母
+
+        divide = (top / (bottom - _top + top)) + 1e-10 # 更新公式
 
         return divide
 
