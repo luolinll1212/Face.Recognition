@@ -119,7 +119,7 @@ if __name__ == '__main__':
     arcloss_opt = optim.Adam(arcloss.parameters())
 
 
-    for epoch in range(10):
+    for epoch in range(100):
         feat = []
         label = []
         for j, (input, target) in enumerate(dataloader):
