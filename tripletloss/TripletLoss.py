@@ -25,6 +25,7 @@ class TripletLoss(nn.Module):
         return loss
 
 if __name__ == '__main__':
+
     torch.manual_seed(0)
     embed = 128
     batch = 10
