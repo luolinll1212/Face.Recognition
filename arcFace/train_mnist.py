@@ -9,6 +9,8 @@ import os
 import matplotlib.pyplot as plt
 
 
+# feature_dim=512,s=30,m=0.5
+
 class ArcLoss(nn.Module):
     def __init__(self, feature_dim, cls_dim):
         super(ArcLoss, self).__init__()
